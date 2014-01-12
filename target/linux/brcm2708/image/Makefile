@@ -25,8 +25,10 @@ define Image/Build/RaspberryPi
 	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/LICENCE.broadcom ::
 	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/start.elf ::
 	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/start_cd.elf ::
+	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/start_x.elf ::
 	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/fixup.dat ::
 	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/fixup_cd.dat ::
+	mcopy -i $(KDIR)/boot.img $(BUILD_DIR)/brcm2708-gpu-fw-boot/fixup_x.dat ::
 	mcopy -i $(KDIR)/boot.img cmdline.txt ::
 	mcopy -i $(KDIR)/boot.img config.txt ::
 	mcopy -i $(KDIR)/boot.img $(KDIR)/Image ::kernel.img  # Copy OpenWrt built kernel
