@@ -30,6 +30,13 @@ define Package/rpi-userland/install
 	$(INSTALL_DIR) $(1)/opt/vc/lib
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/build/bin/* $(1)/opt/vc/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/build/lib/* $(1)/opt/vc/lib
+	$(INSTALL_DIR) $(1)/etc
+	$(CP) ./files/ld.so.conf $(1)/etc/ld.so.conf
+endef
+
+define Package/rpi-userland/postinst
+#!/bin/sh
+ldconfig
 endef
 
 $(eval $(call BuildPackage,rpi-userland))
