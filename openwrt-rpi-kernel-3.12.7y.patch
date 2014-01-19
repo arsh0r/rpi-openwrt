@@ -1,0 +1,136 @@
+diff --git a/target/linux/brcm2708/Makefile b/target/linux/brcm2708/Makefile
+index 30d8739..7e7bef7 100644
+--- a/target/linux/brcm2708/Makefile
++++ b/target/linux/brcm2708/Makefile
+@@ -15,14 +15,29 @@ MAINTAINER:=Florian Fainelli <florian@openwrt.org>
+ CPU_TYPE:=arm1176jzf-s
+ CPU_SUBTYPE:=vfp
+ 
+-LINUX_VERSION:=3.10.26
++LINUX_VERSION:=3.12.7y
+ 
+ include $(INCLUDE_DIR)/target.mk
+-DEFAULT_PACKAGES += brcm2708-gpu-fw kmod-usb-hid kmod-sound-core kmod-sound-arm-bcm2835
++DEFAULT_PACKAGES += brcm2708-gpu-fw kmod-usb-hid kmod-hid-generic kmod-sound-core kmod-sound-arm-bcm2835
++
++LINUX_SITE:=https://github.com/raspberrypi/linux/archive
++KERNEL_REV:=7b3d6227aa8285f7cbd5b8ec767a840b6ac42477
++LINUX_SOURCE:=$(KERNEL_REV).tar.gz
+ 
+ define Target/Description
+ 	Build firmware image for Broadcom BCM2708/BCM2835 SoC devices.
+ 	Currently produces SD Card image for Raspberry Pi.
+ endef
+ 
++ifeq ($(strip $(CONFIG_EXTERNAL_KERNEL_TREE)),"")
++  ifeq ($(strip $(CONFIG_KERNEL_GIT_CLONE_URI)),"")
++    define Kernel/Prepare
++	gzip -dc $(DL_DIR)/$(LINUX_SOURCE) | $(TAR) -C $(KERNEL_BUILD_DIR) $(TAR_OPTIONS)
++	mv $(KERNEL_BUILD_DIR)/linux-$(KERNEL_REV) $(KERNEL_BUILD_DIR)/linux-$(LINUX_VERSION)
++	$(Kernel/Patch)
++	touch $(LINUX_DIR)/.quilt_used
++    endef
++  endif
++endif
++
+ $(eval $(call BuildTarget))
+diff --git a/target/linux/brcm2708/patches-3.12/001-change-version.patch b/target/linux/brcm2708/patches-3.12/001-change-version.patch
+new file mode 100644
+index 0000000..1c7b26e
+--- /dev/null
++++ b/target/linux/brcm2708/patches-3.12/001-change-version.patch
+@@ -0,0 +1,9 @@
++--- a/Makefile
+++++ b/Makefile
++@@ -1,6 +1,6 @@
++ VERSION = 3
++ PATCHLEVEL = 12
++ SUBLEVEL = 7
++-EXTRAVERSION =
+++EXTRAVERSION = y
++ NAME = One Giant Leap for Frogkind
+diff --git a/target/linux/generic/config-3.12 b/target/linux/generic/config-3.12
+index ba72ede..c71e257 100644
+--- a/target/linux/generic/config-3.12
++++ b/target/linux/generic/config-3.12
+@@ -303,6 +303,9 @@ CONFIG_ATM_CLIP_NO_ICMP=y
+ # CONFIG_BACKLIGHT_LM3630 is not set
+ # CONFIG_BACKLIGHT_LM3639 is not set
+ # CONFIG_BACKLIGHT_LP855X is not set
++# CONFIG_BACKLIGHT_GPIO is not set
++# CONFIG_BACKLIGHT_LV5207LP is not set
++# CONFIG_BACKLIGHT_BD6107 is not set
+ # CONFIG_BACKTRACE_SELF_TEST is not set
+ CONFIG_BASE_FULL=y
+ CONFIG_BASE_SMALL=0
+@@ -535,6 +538,7 @@ CONFIG_CAVIUM_OCTEON_HELPER=y
+ # CONFIG_CGROUPS is not set
+ # CONFIG_CGROUP_DEBUG is not set
+ # CONFIG_CHARGER_BQ2415X is not set
++# CONFIG_CHARGER_BQ24190 is not set
+ # CONFIG_CHARGER_GPIO is not set
+ # CONFIG_CHARGER_LP8727 is not set
+ # CONFIG_CHARGER_MAX8903 is not set
+@@ -2833,6 +2837,7 @@ CONFIG_RTC_SYSTOHC=y
+ # CONFIG_RTL8187 is not set
+ # CONFIG_RTL8192E is not set
+ # CONFIG_RTL8192U is not set
++# CONFIG_RTL8192CU is not set
+ # CONFIG_RTL8306_PHY is not set
+ # CONFIG_RTL8366RB_PHY is not set
+ # CONFIG_RTL8366S_PHY is not set
+@@ -3006,6 +3011,7 @@ CONFIG_SELECT_MEMORY_MODEL=y
+ # CONFIG_SENSORS_ASC7621 is not set
+ # CONFIG_SENSORS_ATK0110 is not set
+ # CONFIG_SENSORS_ATXP1 is not set
++# CONFIG_SENSORS_BCM2835 is not set
+ # CONFIG_SENSORS_BH1770 is not set
+ # CONFIG_SENSORS_BH1780 is not set
+ # CONFIG_SENSORS_CORETEMP is not set
+@@ -3229,6 +3235,7 @@ CONFIG_SLABINFO=y
+ # CONFIG_SND_AW2 is not set
+ # CONFIG_SND_AZT2320 is not set
+ # CONFIG_SND_AZT3328 is not set
++# CONFIG_SND_BCM2708_SOC_I2S is not set
+ # CONFIG_SND_BT87X is not set
+ # CONFIG_SND_CA0106 is not set
+ # CONFIG_SND_CMI8330 is not set
+@@ -3344,6 +3351,7 @@ CONFIG_SND_PCM_OSS_PLUGINS=y
+ # CONFIG_SND_TRIDENT is not set
+ CONFIG_SND_USB=y
+ # CONFIG_SND_USB_6FIRE is not set
++# CONFIG_SND_USB_HIFACE is not set
+ # CONFIG_SND_USB_AUDIO is not set
+ # CONFIG_SND_USB_CAIAQ is not set
+ # CONFIG_SND_USB_HIFACE is not set
+@@ -3911,6 +3919,7 @@ CONFIG_USB_SERIAL_SAFE_PADDED=y
+ # CONFIG_USB_USBNET is not set
+ # CONFIG_USB_USS720 is not set
+ # CONFIG_USB_VIDEO_CLASS is not set
++# CONFIG_VIDEO_BCM2835 is not set
+ CONFIG_USB_VIDEO_CLASS_INPUT_EVDEV=y
+ # CONFIG_USB_VL600 is not set
+ # CONFIG_USB_WDM is not set
+diff --git a/target/linux/generic/patches-3.12/880-gateworks_system_controller.patch b/target/linux/generic/patches-3.12/880-gateworks_system_controller.patch
+index 6e4ae30..7c5e314 100644
+--- a/target/linux/generic/patches-3.12/880-gateworks_system_controller.patch
++++ b/target/linux/generic/patches-3.12/880-gateworks_system_controller.patch
+@@ -18,14 +18,13 @@
+  	depends on GPIOLIB
+ --- a/drivers/hwmon/Makefile
+ +++ b/drivers/hwmon/Makefile
+-@@ -142,6 +142,7 @@ obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l7
++@@ -140,5 +140,6 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt823
++ obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
++ obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
+  obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
+++obj-$(CONFIG_SENSORS_GSC)	+= gsc.o
+  obj-$(CONFIG_SENSORS_WM831X)	+= wm831x-hwmon.o
+  obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
+-+obj-$(CONFIG_SENSORS_GSC)	+= gsc.o
+- 
+- obj-$(CONFIG_PMBUS)		+= pmbus/
+- 
+ --- /dev/null
+ +++ b/drivers/hwmon/gsc.c
+ @@ -0,0 +1,308 @@
