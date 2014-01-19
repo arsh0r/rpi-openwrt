@@ -7,7 +7,7 @@ index 30d8739..7e7bef7 100644
  CPU_SUBTYPE:=vfp
  
 -LINUX_VERSION:=3.10.26
-+LINUX_VERSION:=3.12.7y
++LINUX_VERSION:=3.12.7
  
  include $(INCLUDE_DIR)/target.mk
 -DEFAULT_PACKAGES += brcm2708-gpu-fw kmod-usb-hid kmod-sound-core kmod-sound-arm-bcm2835
