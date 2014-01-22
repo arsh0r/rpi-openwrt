@@ -132,6 +132,8 @@ define Package/base-files/install
 	ln -sf /proc/mounts $(1)/etc/mtab
 	rm -f $(1)/var
 	mkdir -p $(1)/var
+	mkdir -p $(1)/var/spool
+	mkdir -p $(1)/var/spool/cron
 	#ln -sf /tmp $(1)/var
 	mkdir -p $(1)/etc
 	ln -sf /tmp/resolv.conf /tmp/fstab /tmp/TZ $(1)/etc/
