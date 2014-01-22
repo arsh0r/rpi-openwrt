@@ -1,0 +1,6 @@
+if [ $(pgrep raspistill) ]; then
+	reboot
+else
+	/opt/vc/bin/raspistill -n -w 1024 -h 768 -o /root/img_$(date +"%y%m%d%H%M").jpg &
+	scp /root/img_$(date +"%y%m%d%H%M").jpg user@server:/var/www/rpi-cam/img.jpg -i /root/.ssh/id_rsa
+fi
